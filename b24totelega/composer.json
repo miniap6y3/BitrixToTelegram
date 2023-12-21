@@ -1,0 +1,23 @@
+{
+  "name": "vendor_name/b24totelega",
+  "description": "b24 order to bot",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "miniap6y3",
+      "email": "miniap6y3@gmail.com"
+    }
+  ],
+  "require": {
+    "irazasyed/telegram-bot-sdk": "^3.13",
+    "ext-pdo": "*",
+    "ext-curl": "*"
+  }
+  ,
+  "autoload": {
+    "psr-4": {
+      "App\\": ""
+    }
+  }
+}
