@@ -15,20 +15,13 @@ require_once ('crest.php');
 </head>
 <body>
     <div class="item">
-        <h3 style="text-align: center;">"Заявки в телегу"</h3>
-        <button class="btn btn-primary" style="margin-right: 8px;" onclick="installActivity();"><i
-                    class="bi bi-download"></i> Установить робота
+        <h3 style="text-align: center;">"Заявки в телеграм"</h3>
+        <button class="btn btn-primary" style="margin: 8px;" id="install"> Установить робота
         </button>
-        <button class="btn btn-primary" onclick="uninstallActivity('my_act_in_telega');"><i class="bi bi-x-square"></i>
+        <button class="btn btn-primary" style="margin: 8px;" id="uninstall">
             Удалить робота
         </button>
     </div>
-	<div id="auth-data">OAuth 2.0 data from REQUEST:
-		<pre><?php
-//			print_r($_REQUEST);
-			?>
-		</pre>
-	</div>
 	<div>
 		<?php
 
@@ -39,7 +32,10 @@ require_once ('crest.php');
 		?>
 	</div>
     <script type="text/javascript">
-        function installActivity() {
+            let fields =
+
+        document.querySelector("#install").onclick = function installActivity() {
+
             let robotFields = {
                 "NAME": "Заявки в Телеграм",
                 "CODE": "my_act_in_telega",
@@ -51,7 +47,7 @@ require_once ('crest.php');
                         "Name": "ID",
                         'Type': "string",
                         'Default': "{{ID}}",
-                        'Hidden': true,
+                        'Hidden': "Y",
                     },
                     "chat_id": {
                         "Name": "ID чата",
@@ -60,12 +56,35 @@ require_once ('crest.php');
                         "Required": "Y"
                     },
                     "messages": {
-                        "Name": "Сообщения",
-                        "Description": "Список сообщений для отправки в чат",
+                        "Name": "Сообщениe",
+                        "Description": "Текст сообщения для отправки",
                         "Type": "text",
                         "Required": "Y"
-                    }
-                }
+                    },
+                    "update_messages": {
+                        "Name": "Обновлять сообщение",
+                        "Description": "Редактирование сообщения с помощью повторной отправки",
+                        "Type": "select",
+                        "Options": {
+                            "true": "Да",
+                            "false": "Нет"
+                        },
+                        "Required": "Y",
+                        "Default ": "false",
+                    },
+                    "keyboard": {
+                        "Name": "Клавиатура",
+                        "Description": "Кнопка 'Взять в работу' off/on",
+                        "Type": "select",
+                        "Options": {
+                            "true": "Да",
+                            "false": "Нет"
+                        },
+                        "Required": "Y",
+                        "Default ": "true",
+                    },
+
+                },
             };
 
             BX24.callMethod(
@@ -82,8 +101,8 @@ require_once ('crest.php');
             );
         }
 
-        function uninstallActivity(my_act_in_telega) {
-            let params = {
+        document.querySelector("#uninstall").onclick = function uninstallActivity() {
+            var params = {
                 'CODE': 'my_act_in_telega'
             };
 
@@ -98,6 +117,7 @@ require_once ('crest.php');
                 }
             );
         }
+
     </script>
 </body>
 </html>

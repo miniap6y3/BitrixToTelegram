@@ -50,3 +50,16 @@ function messageError($bot, $chat_id){
         'reply_markup' => json_encode(['inline_keyboard' => $inline_keyboard]),
     ]);
 }
+
+/**
+ * @param int $from_id
+ * @param array $users_data
+ * @return bool
+ */
+function validationUser(int $from_id, array $users_data) : bool
+{
+    if( in_array($from_id, $users_data, true)){
+        return true;
+    }
+    return false;
+}

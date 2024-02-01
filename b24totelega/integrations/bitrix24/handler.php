@@ -26,6 +26,8 @@ $bot->setWebhook(['url' => 'https://tideways.eco-bur.ru/b24totelega/bot/hook.php
 $chat_id = ($_REQUEST['properties']['chat_id']);
 $message = ($_REQUEST['properties']['messages']);
 $deal_id = ($_REQUEST['properties']['dial_id']);
+$update_massage = ($_REQUEST['properties']['update_messages']);
+$keyswitch = ($_REQUEST['properties']['keyboard']);
 
 // Отправляем комментарий в timeline сделки
 $comment = CRest::call(
@@ -50,17 +52,23 @@ $keyboard = new Keyboard(
         ]
     ]);
 
+if ($keyswitch === 'true'){
+    $reply_markup = ['reply_markup' => $keyboard];
+} else {
+    $reply_markup = [];
+}
+
+
 // Редактирование заявки.
 $search_bid = $watchdb->searchRecords('dealId', $deal_id,['chat_id' => $chat_id]);
-if( !empty($search_bid)){
+if( !empty($search_bid) && $update_massage === 'true'){
     $data_edit = [
         'chat_id' => $chat_id,
         'message_id' => $search_bid[0]['message_id'],
         'text' => $message,
-        'reply_markup' => $keyboard,
     ];
 
-    $bot->editMessageText($data_edit);
+    $bot->editMessageText(array_merge($data_edit,$reply_markup));
 
     $bot->sendMessage(
         [
@@ -73,12 +81,13 @@ if( !empty($search_bid)){
     $watchdb->updateRecordByField('dealId', $deal_id, 'message', $message, ['chat_id' => $chat_id]);
 } else {
     // отправляем сообщение в Telegram
-    $order = $bot->sendMessage(
+    $order = $bot->sendMessage(array_merge(
         [
             'chat_id' => $chat_id,
             'text' => $message,
-            'reply_markup' => $keyboard,
-        ]
+        ],
+        $reply_markup)
+
     );
     //получаем ответ
     $messageId = $order->messageId;

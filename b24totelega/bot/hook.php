@@ -29,7 +29,7 @@ $upd = $bot->commandsHandler(true);
 $bitrix = new BitrixController();
 
 $update = json_decode(file_get_contents('php://input'), true);
-//file_put_contents('log.txt', print_r($update, 1), FILE_APPEND);
+file_put_contents('log.txt', print_r($update, 1), FILE_APPEND);
 $chat_id = $update['message']['chat']['id'] ?? $update['callback_query']['message']['chat']['id'];
 $dir_save = __DIR__ . "/../files/";
 if (isset($update['message']['reply_to_message'])){
@@ -40,7 +40,7 @@ if (isset($update['message']['reply_to_message'])){
     $dir_save = __DIR__ . "/../files/$deal_id/";
 }
 
-if (isset($update['callback_query'])) {
+if (isset($update['callback_query']) && validationUser($update['callback_query']['from']['id'], $bot_config['users'])) {
     $callback_query = $update['callback_query'];
 
     // Получаем данные из callback запроса
@@ -68,7 +68,7 @@ if (isset($update['callback_query'])) {
 
            if ($chat_id === $bot_config['chats']['engineers']) { // инженер
                 $callback = 'phoned_engineers';
-            } else{ // монтажи
+            } else { // монтажи
                 $callback = 'phoned';
             }
 
@@ -192,6 +192,7 @@ if (isset($update['callback_query'])) {
                 'text' => 'Заявка выполнена'
             ]);
 
+            $bitrix->setTask($deal_id, 'Выезд завершен!');
             // Обновляем статус пользователя в базе данных
             $watchdb->updateRecordByField('dealId', $deal_id, 'status', 'upload', ['chat_id' => $chat_id]);
 
@@ -372,7 +373,7 @@ if (isset($update['callback_query'])) {
             break;
 
         case 'set_to_schedule':
-            $text_edit = "Поставлен в график! {$edit_date->format("d.m.Y")}\n" . stripFirstLine($message['text']);
+            $text_edit = "Поставлен в график! \n" . stripFirstLine($message['text']);
 
             $keyboard = new Keyboard([
                 'inline_keyboard' => [
@@ -403,6 +404,9 @@ if (isset($update['callback_query'])) {
                 'reply_to_message_id' => $message_id
             ]);
 
+            $bitrix->changeDialStatus($deal_id, 'UC_K729P2');
+            $bitrix->setTask($deal_id, 'Заявка поставлена в график');
+
             $watchdb->updateRecordByField('message_id', $message_id, 'reply_message_id', $message->messageId, ['chat_id' => $chat_id]);
 
             $watchdb->updateRecordByField('dealId', $deal_id, 'status', 'logist', ['chat_id' => $chat_id]);
@@ -420,7 +424,7 @@ if (isset($update['callback_query'])) {
             messageError($bot, $chat_id);
             break;
     }
-} else if (isset($update['message'], $deal_id)) { //добавить проверку по id пользователя кто пишет
+} else if (isset($update['message'], $deal_id) && validationUser($update['message']['from']['id'], $bot_config['users'])) { //добавить проверку по id пользователя кто пишет
     $message = $update['message'];
     $chat_id = $message['chat']['id'];
     $message_text = $message['text'];
@@ -476,6 +480,8 @@ if (isset($update['callback_query'])) {
             $bot->sendMessage(['chat_id' => $chat_id, 'text' => 'Отправлено менеджеру']);
             $watchdb->updateRecordByField('dealId', $deal_id, 'status','send_message', ['chat_id' => $chat_id]);
     }
+} else if (isset($update['callback_query']) && !validationUser($update['callback_query']['from']['id'], $bot_config['users'])){
+    $bot->sendMessage(['chat_id' => $chat_id, 'text' => $update['callback_query']['from']['first_name'] . ', у вас нет доступа!']);
 }
 
 
